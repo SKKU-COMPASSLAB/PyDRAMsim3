@@ -46,3 +46,16 @@ release
 
 # IDEs / Editors
 .vscode/
+
+.tmp/
+*egg*
+*.html
+*.so
+__pycache__
+
+pydramsim3/CMakeFiles
+pydramsim3/CMakeCache.txt
+pydramsim3/cmake*
+pydramsim3/Makefile
+pydramsim3/lib
+pydramsim3/pydramsim3.c
