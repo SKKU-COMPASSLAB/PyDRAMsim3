@@ -1,0 +1,2 @@
+recursive-include pydramsim3/lib *.so *.dylib *.dll
+recursive-include pydramsim3/configs *.ini

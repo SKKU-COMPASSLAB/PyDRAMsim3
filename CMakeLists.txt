@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.6)
 project(dramsim3)
 
 set(default_build_type "Release")
@@ -39,6 +39,8 @@ add_library(dramsim3 SHARED
     src/simple_stats.cc
     src/timing.cc
     src/memory_system.cc
+    src/memory_system_wrapper.cc
+    src/py_interface.cc
 )
 
 if (THERMAL)
@@ -80,7 +82,7 @@ target_include_directories(dramsim3 INTERFACE src)
 target_compile_options(dramsim3 PRIVATE -Wall)
 target_link_libraries(dramsim3 PRIVATE inih format)
 set_target_properties(dramsim3 PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
@@ -91,6 +93,17 @@ add_executable(dramsim3main src/main.cc src/cpu.cc)
 target_link_libraries(dramsim3main PRIVATE dramsim3 args)
 target_compile_options(dramsim3main PRIVATE)
 set_target_properties(dramsim3main PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+)
+
+add_executable(dramsim3wrappertest tests/test_msys_wrapper.cc)
+target_link_libraries(dramsim3wrappertest PRIVATE dramsim3 args)
+target_compile_options(dramsim3wrappertest PRIVATE)
+set_target_properties(dramsim3wrappertest PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
