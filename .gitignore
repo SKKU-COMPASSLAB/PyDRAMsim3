@@ -53,6 +53,7 @@ release
 *.so
 __pycache__
 
+pydramsim3/bin
 pydramsim3/CMakeFiles
 pydramsim3/CMakeCache.txt
 pydramsim3/cmake*
