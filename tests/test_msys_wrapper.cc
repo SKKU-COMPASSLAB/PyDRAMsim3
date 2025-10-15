@@ -25,10 +25,10 @@ int main(int argc, char **argv) {
 
     // delete cmd;
 
-    auto msys_p = pydramsim3_create_msys(argv[1], "./.tmp");
-    auto cmd_p  = pydramsim3_create_msys_cmd(0x1000, 64, false);
+    auto msys_p = pydramsim3_create_msys(argv[1], "./.tmp", 1);
+    auto cmd_p  = pydramsim3_create_msys_cmd(0, 0x1000, 64, false);
 
-    pydramsim3_msys_dispatch_cmd(msys_p, cmd_p);
+    pydramsim3_msys_dispatch_cmd(msys_p, cmd_p, NULL, NULL);
 
     for (int i = 0; i < 1000; i++) {
         pydramsim3_msys_cycle_step(msys_p);
