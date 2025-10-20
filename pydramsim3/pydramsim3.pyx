@@ -21,7 +21,8 @@ cdef command_callback_wrapper(void *cmd_p):
     cap_id = PyLong_FromVoidPtr(cmd_p)
     if cap_id in command_callback_container:
         py_callback, cap = command_callback_container[cap_id]
-        py_callback(cap)
+        if py_callback is not None:
+            py_callback(cap)
         del command_callback_container[cap_id]
 
 
@@ -33,7 +34,8 @@ cdef dispatch_callback_wrapper(void *cmd_p):
     cap_id = PyLong_FromVoidPtr(cmd_p)
     if cap_id in dispatch_callback_container:
         py_callback, cap = dispatch_callback_container[cap_id]
-        py_callback(cap)
+        if py_callback is not None:
+            py_callback(cap)
         del dispatch_callback_container[cap_id]
 
 

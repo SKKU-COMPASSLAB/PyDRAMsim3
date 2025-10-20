@@ -36,20 +36,6 @@ MemorySystemWrapper::~MemorySystemWrapper() {
 }
 
 bool MemorySystemWrapper::dispatch_command(MemorySystemCommand *cmd_p) {
-    // if (this->_current_dispatched_cmd_p != NULL) {
-    //     this->_suspended_cmds.push_back(cmd_p);
-    //     return false;
-    // }
-    
-    // this->_current_dispatched_cmd_p = cmd_p;
-    // this->_current_dispatched_cmd_p->n_req = (this->_current_dispatched_cmd_p->size + this->_transfer_size - 1) / this->_transfer_size;
-    // this->_current_dispatched_cmd_p->dispatch_progress = 0;
-    // this->_current_dispatched_cmd_p->execute_progress = 0;
-
-    // if (this->_current_dispatched_cmd_p->dispatch_callback) {
-    //     this->_current_dispatched_cmd_p->dispatch_callback((void *)cmd_p);  // call dispatch callback immediately
-    // }
-
     auto cmd_q_id = cmd_p->cmd_q_id;
     this->_cmd_queue[cmd_q_id].push_back(cmd_p);
     
@@ -91,38 +77,6 @@ void MemorySystemWrapper::cycle_step() {
             }
         }
     }
-
-    // if (this->_current_dispatched_cmd_p) {
-    //     const auto is_write = this->_current_dispatched_cmd_p->is_write;
-    //     const auto n_req    = this->_current_dispatched_cmd_p->n_req;
-    //     const auto req_addr = this->_current_dispatched_cmd_p->addr + (this->_current_dispatched_cmd_p->dispatch_progress * this->_transfer_size);
-
-    //     if (_msys_p->WillAcceptTransaction(req_addr, is_write)) {
-    //         _msys_p->AddTransaction(req_addr, is_write);
-
-    //         if (!is_write) {
-    //             if (this->_ongoing_rd_req_cmd_map.find(req_addr) == this->_ongoing_rd_req_cmd_map.end())
-    //                 this->_ongoing_rd_req_cmd_map[req_addr] = std::queue<MemorySystemCommand *>();
-    //             this->_ongoing_rd_req_cmd_map[req_addr].push(this->_current_dispatched_cmd_p);
-    //         } else {
-    //             if (this->_ongoing_wr_req_cmd_map.find(req_addr) == this->_ongoing_wr_req_cmd_map.end())
-    //                 this->_ongoing_wr_req_cmd_map[req_addr] = std::queue<MemorySystemCommand *>();
-    //             this->_ongoing_wr_req_cmd_map[req_addr].push(this->_current_dispatched_cmd_p);
-    //         }
-            
-    //         this->_current_dispatched_cmd_p->dispatch_progress++;
-
-    //         if (this->_current_dispatched_cmd_p->dispatch_progress >= n_req) {
-    //             this->_current_dispatched_cmd_p = NULL;
-    //         }
-    //     }
-    // }
-
-    // if (this->_current_dispatched_cmd_p == NULL && !this->_suspended_cmds.empty()) {
-    //     auto next_cmd_p = this->_suspended_cmds.front();
-    //     this->_suspended_cmds.erase(this->_suspended_cmds.begin());
-    //     this->dispatch_command(next_cmd_p);
-    // }
 }
 
 void MemorySystemWrapper::read_callback(uint64_t addr) {

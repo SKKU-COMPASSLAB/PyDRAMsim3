@@ -36,13 +36,10 @@ private:
     dramsim3::MemorySystem *_msys_p;
     unsigned int _transfer_size;
 
-    // MemorySystemCommand *_current_dispatched_cmd_p = NULL;
     std::vector<std::vector<MemorySystemCommand *>> _cmd_queue;
 
     std::map<uint64_t, std::queue<MemorySystemCommand *>> _ongoing_rd_req_cmd_map;
     std::map<uint64_t, std::queue<MemorySystemCommand *>> _ongoing_wr_req_cmd_map;
-    
-    // std::vector<MemorySystemCommand *> _suspended_cmds;
 
 public:
     MemorySystemWrapper(
