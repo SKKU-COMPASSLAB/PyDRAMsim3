@@ -6,7 +6,6 @@
 extern "C" {
 #endif
 
-
 void *pydramsim3_create_msys(char *config_file, char *output_dir, int cmd_queue_num) {
     return new MemorySystemWrapper(config_file, output_dir, cmd_queue_num);
 }
@@ -26,11 +25,17 @@ void pydramsim3_destroy_msys_cmd(void *cmd_p) {
 
 
 char  pydramsim3_check_msys_cmd_dispatched(void *cmd_p) {
-    return (char)check_msys_cmd_dispatched(static_cast<MemorySystemCommand *>(cmd_p));
+    auto cmd = static_cast<MemorySystemCommand *>(cmd_p);
+    if (cmd->n_req == 0)
+        return 0;
+    return (char)check_msys_cmd_dispatched(cmd);
 }
 
 char  pydramsim3_check_msys_cmd_executed(void *cmd_p) {
-    return (char)check_msys_cmd_executed(static_cast<MemorySystemCommand *>(cmd_p));
+    auto cmd = static_cast<MemorySystemCommand *>(cmd_p);
+    if (cmd->n_req == 0)
+        return 0;
+    return (char)check_msys_cmd_executed(cmd);
 }
 
 int   pydramsim3_get_expected_cmd_cycles(void *msys_p, void *cmd_p) {
@@ -46,9 +51,13 @@ int   pydramsim3_get_expected_cmd_cycles(void *msys_p, void *cmd_p) {
 
 char  pydramsim3_msys_dispatch_cmd(void *msys, void *cmd_p, callback_t dispatch_callback, callback_t execute_callback) {
     MemorySystemCommand *cmd = static_cast<MemorySystemCommand *>(cmd_p);
+    MemorySystemWrapper *msys_wrapper = static_cast<MemorySystemWrapper *>(msys);
+
+    cmd->n_req = (cmd->size + (msys_wrapper->get_bus_bits() / 8 * msys_wrapper->get_burst_length()) - 1) /
+                  (msys_wrapper->get_bus_bits() / 8 * msys_wrapper->get_burst_length());
     cmd->dispatch_callback = dispatch_callback;
     cmd->execute_callback = execute_callback;
-    return static_cast<MemorySystemWrapper *>(msys)->dispatch_command(cmd);
+    return msys_wrapper->dispatch_command(cmd);
 }
 
 void  pydramsim3_msys_cycle_step(void *msys) {
