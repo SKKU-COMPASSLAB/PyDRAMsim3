@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "memory_system_wrapper.h"
 
 
@@ -14,8 +15,9 @@ bool check_msys_cmd_dispatched(MemorySystemCommand *cmd_p) {
 MemorySystemWrapper::MemorySystemWrapper(
     char *config_file, 
     char *output_dir,
-    int cmd_queue_num
-): _cmd_queue_num(cmd_queue_num) {
+    int cmd_queue_num,
+    int max_issue_per_cmd_q_per_cycle
+): _cmd_queue_num(cmd_queue_num), _max_issue_per_cmd_q_per_cycle(std::max(1, max_issue_per_cmd_q_per_cycle)) {
     this->_config_file_raw = strdup(config_file);
     this->_output_dir_raw = strdup(output_dir);
 
@@ -37,6 +39,9 @@ MemorySystemWrapper::~MemorySystemWrapper() {
 
 bool MemorySystemWrapper::dispatch_command(MemorySystemCommand *cmd_p) {
     auto cmd_q_id = cmd_p->cmd_q_id;
+    if (cmd_q_id < 0 || cmd_q_id >= this->_cmd_queue_num) {
+        return false;
+    }
     this->_cmd_queue[cmd_q_id].push_back(cmd_p);
     
     return true;
@@ -46,16 +51,20 @@ void MemorySystemWrapper::cycle_step() {
     _msys_p->ClockTick();
 
     for (int qid = 0; qid < this->_cmd_queue_num; qid++) {
-        if (this->_cmd_queue[qid].empty())
-            continue;
+        int issued_this_cycle = 0;
 
-        auto cmd_p = this->_cmd_queue[qid].front();
-        const auto is_write = cmd_p->is_write;
-        const auto n_req    = cmd_p->n_req;
-        const auto req_addr = cmd_p->addr + (cmd_p->dispatch_progress * this->_transfer_size);
+        while (!this->_cmd_queue[qid].empty() && issued_this_cycle < this->_max_issue_per_cmd_q_per_cycle) {
+            auto cmd_p = this->_cmd_queue[qid].front();
+            const auto is_write = cmd_p->is_write;
+            const auto n_req    = cmd_p->n_req;
+            const auto req_addr = cmd_p->addr + (cmd_p->dispatch_progress * this->_transfer_size);
 
-        if (_msys_p->WillAcceptTransaction(req_addr, is_write)) {
-            _msys_p->AddTransaction(req_addr, is_write);
+            if (!_msys_p->WillAcceptTransaction(req_addr, is_write)) {
+                break;
+            }
+            if (!_msys_p->AddTransaction(req_addr, is_write)) {
+                break;
+            }
 
             if (!is_write) {
                 if (this->_ongoing_rd_req_cmd_map.find(req_addr) == this->_ongoing_rd_req_cmd_map.end())
@@ -66,8 +75,9 @@ void MemorySystemWrapper::cycle_step() {
                     this->_ongoing_wr_req_cmd_map[req_addr] = std::queue<MemorySystemCommand *>();
                 this->_ongoing_wr_req_cmd_map[req_addr].push(cmd_p);
             }
-            
+
             cmd_p->dispatch_progress++;
+            issued_this_cycle++;
 
             if (cmd_p->dispatch_progress >= n_req) {
                 if (cmd_p->dispatch_callback) {

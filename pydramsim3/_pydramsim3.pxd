@@ -2,7 +2,7 @@ cdef extern from "py_interface.h":
     ctypedef unsigned long long msys_data_t
     ctypedef void (* callback_t)(void *cmd_p)
 
-    void *pydramsim3_create_msys(char *config_file, char *output_dir, int cmd_queue_num) nogil
+    void *pydramsim3_create_msys(char *config_file, char *output_dir, int cmd_queue_num, int max_issue_per_cmd_q_per_cycle) nogil
     void  pydramsim3_destroy_msys(void *msys) nogil
 
     void *pydramsim3_create_msys_cmd(int cmd_q_id, msys_data_t addr, msys_data_t size, bint is_write) nogil

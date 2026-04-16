@@ -32,6 +32,7 @@ private:
     char *_config_file_raw;
     char *_output_dir_raw;
     int _cmd_queue_num;
+    int _max_issue_per_cmd_q_per_cycle;
 
     dramsim3::MemorySystem *_msys_p;
     unsigned int _transfer_size;
@@ -45,7 +46,8 @@ public:
     MemorySystemWrapper(
         char *config_file, 
         char *output_dir,
-        int cmd_queue_num
+        int cmd_queue_num,
+        int max_issue_per_cmd_q_per_cycle
     );
     ~MemorySystemWrapper();
 

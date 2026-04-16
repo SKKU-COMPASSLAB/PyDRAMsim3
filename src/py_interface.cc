@@ -6,8 +6,8 @@
 extern "C" {
 #endif
 
-void *pydramsim3_create_msys(char *config_file, char *output_dir, int cmd_queue_num) {
-    return new MemorySystemWrapper(config_file, output_dir, cmd_queue_num);
+void *pydramsim3_create_msys(char *config_file, char *output_dir, int cmd_queue_num, int max_issue_per_cmd_q_per_cycle) {
+    return new MemorySystemWrapper(config_file, output_dir, cmd_queue_num, max_issue_per_cmd_q_per_cycle);
 }
 
 void  pydramsim3_destroy_msys(void *msys) {

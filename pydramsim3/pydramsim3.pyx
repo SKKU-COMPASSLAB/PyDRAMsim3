@@ -60,10 +60,10 @@ cdef void cmd_capsule_destructor(capsule) except *:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def create_msys(config_file, output_dir, int cmd_queue_num=1):
+def create_msys(config_file, output_dir, int cmd_queue_num=1, int max_issue_per_cmd_q_per_cycle=1):
     cdef char *config_file_p = PyBytes_AsString(config_file.encode("ascii"))
     cdef char *output_dir_p  = PyBytes_AsString(output_dir.encode("ascii"))
-    cdef void *msys_p = pydramsim3_create_msys(config_file_p, output_dir_p, cmd_queue_num)
+    cdef void *msys_p = pydramsim3_create_msys(config_file_p, output_dir_p, cmd_queue_num, max_issue_per_cmd_q_per_cycle)
 
     cap = PyCapsule_New(msys_p, MSYS_CAPSULE_NAME, <PyCapsule_Destructor> msys_capsule_destructor)
     return cap
