@@ -49,6 +49,7 @@ cdef void msys_capsule_destructor(capsule) except *:
 
 cdef void cmd_capsule_destructor(capsule) except *:
     global command_callback_container
+    global dispatch_callback_container
     cdef void* p = PyCapsule_GetPointer(capsule, CMD_CAPSULE_NAME)
     cap_id = PyLong_FromVoidPtr(p)
 
@@ -56,22 +57,24 @@ cdef void cmd_capsule_destructor(capsule) except *:
         pydramsim3_destroy_msys_cmd(p)    
         if cap_id in command_callback_container:
             del command_callback_container[cap_id]
+        if cap_id in dispatch_callback_container:
+            del dispatch_callback_container[cap_id]
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def create_msys(config_file, output_dir, int cmd_queue_num=1, int max_issue_per_cmd_q_per_cycle=1):
+def create_msys(config_file, output_dir, int max_issue_per_cmd_q_per_cycle=1):
     cdef char *config_file_p = PyBytes_AsString(config_file.encode("ascii"))
     cdef char *output_dir_p  = PyBytes_AsString(output_dir.encode("ascii"))
-    cdef void *msys_p = pydramsim3_create_msys(config_file_p, output_dir_p, cmd_queue_num, max_issue_per_cmd_q_per_cycle)
+    cdef void *msys_p = pydramsim3_create_msys(config_file_p, output_dir_p, max_issue_per_cmd_q_per_cycle)
 
     cap = PyCapsule_New(msys_p, MSYS_CAPSULE_NAME, <PyCapsule_Destructor> msys_capsule_destructor)
     return cap
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def create_msys_cmd(int cmd_q_id, msys_data_t addr, msys_data_t size, bint is_write):
-    cdef void *cmd_p = pydramsim3_create_msys_cmd(cmd_q_id, addr, size, is_write)
+def create_msys_cmd(msys_data_t addr, msys_data_t size, bint is_write):
+    cdef void *cmd_p = pydramsim3_create_msys_cmd(addr, size, is_write)
     cap = PyCapsule_New(cmd_p, CMD_CAPSULE_NAME, <PyCapsule_Destructor> cmd_capsule_destructor)
     return cap
 
@@ -113,6 +116,9 @@ def msys_dispatch_cmd(msys, cmd, dispatch_callback, execute_callback):
     command_callback_container[PyLong_FromVoidPtr(cmd_p)] = (execute_callback, cmd)
 
     cdef bint flag = pydramsim3_msys_dispatch_cmd(msys_p, cmd_p, <callback_t>dispatch_callback_wrapper, <callback_t>command_callback_wrapper)
+    if not flag:
+        del dispatch_callback_container[PyLong_FromVoidPtr(cmd_p)]
+        del command_callback_container[PyLong_FromVoidPtr(cmd_p)]
     return flag
 
 @cython.boundscheck(False)

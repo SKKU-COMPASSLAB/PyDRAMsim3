@@ -6,8 +6,12 @@
 extern "C" {
 #endif
 
-void *pydramsim3_create_msys(char *config_file, char *output_dir, int cmd_queue_num, int max_issue_per_cmd_q_per_cycle) {
-    return new MemorySystemWrapper(config_file, output_dir, cmd_queue_num, max_issue_per_cmd_q_per_cycle);
+#ifndef NULL
+#define NULL 0
+#endif
+
+void *pydramsim3_create_msys(char *config_file, char *output_dir, int max_issue_per_cmd_q_per_cycle) {
+    return new MemorySystemWrapper(config_file, output_dir, max_issue_per_cmd_q_per_cycle);
 }
 
 void  pydramsim3_destroy_msys(void *msys) {
@@ -15,8 +19,8 @@ void  pydramsim3_destroy_msys(void *msys) {
 }
 
 
-void *pydramsim3_create_msys_cmd(int cmd_q_id, msys_data_t addr, msys_data_t size, char is_write) {
-    return new MemorySystemCommand{cmd_q_id, (uint64_t)addr, (uint64_t)size, (bool)is_write, 0, 0, 0, NULL, NULL};
+void *pydramsim3_create_msys_cmd(msys_data_t addr, msys_data_t size, char is_write) {
+    return new MemorySystemCommand{(uint64_t)addr, (uint64_t)size, (bool)is_write, 0, 0, 0, NULL, NULL};
 }
 
 void pydramsim3_destroy_msys_cmd(void *cmd_p) {

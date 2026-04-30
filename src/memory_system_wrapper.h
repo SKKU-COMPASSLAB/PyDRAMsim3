@@ -12,7 +12,6 @@ typedef void (* callback_t)(void *cmd_p);
 #endif
 
 typedef struct {
-    int cmd_q_id;
     uint64_t addr;
     uint64_t size;
     bool is_write;
@@ -31,13 +30,15 @@ class MemorySystemWrapper {
 private:
     char *_config_file_raw;
     char *_output_dir_raw;
-    int _cmd_queue_num;
+    // int _cmd_queue_num;
     int _max_issue_per_cmd_q_per_cycle;
+    // int _rr_next_cmd_q_id;
 
     dramsim3::MemorySystem *_msys_p;
     unsigned int _transfer_size;
 
-    std::vector<std::vector<MemorySystemCommand *>> _cmd_queue;
+    // std::vector<std::vector<MemorySystemCommand *>> _cmd_queue;
+    std::vector<MemorySystemCommand *> _inst_cmd_queue;
 
     std::map<uint64_t, std::queue<MemorySystemCommand *>> _ongoing_rd_req_cmd_map;
     std::map<uint64_t, std::queue<MemorySystemCommand *>> _ongoing_wr_req_cmd_map;
@@ -46,7 +47,6 @@ public:
     MemorySystemWrapper(
         char *config_file, 
         char *output_dir,
-        int cmd_queue_num,
         int max_issue_per_cmd_q_per_cycle
     );
     ~MemorySystemWrapper();

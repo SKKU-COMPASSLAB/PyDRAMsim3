@@ -13,10 +13,10 @@ typedef unsigned long long msys_data_t;
 typedef void (* callback_t)(void *cmd_p);
 #endif
 
-void *pydramsim3_create_msys(char *config_file, char *output_dir, int cmd_queue_num, int max_issue_per_cmd_q_per_cycle);
+void *pydramsim3_create_msys(char *config_file, char *output_dir, int max_issue_per_cmd_q_per_cycle);
 void  pydramsim3_destroy_msys(void *msys);
 
-void *pydramsim3_create_msys_cmd(int cmd_q_id, msys_data_t addr, msys_data_t size, char is_write);
+void *pydramsim3_create_msys_cmd(msys_data_t addr, msys_data_t size, char is_write);
 void  pydramsim3_destroy_msys_cmd(void *cmd_p);
 
 char  pydramsim3_check_msys_cmd_dispatched(void *cmd_p);
