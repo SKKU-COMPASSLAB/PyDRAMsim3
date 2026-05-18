@@ -65,7 +65,9 @@ void MemorySystemWrapper::cycle_step() {
         auto cmd_p = this->_inst_cmd_queue.front();
         const auto is_write = cmd_p->is_write;
         const auto n_req    = cmd_p->n_req;
-        const auto req_addr = cmd_p->addr + (cmd_p->dispatch_progress * this->_transfer_size);
+        
+        uint64_t start_aligned = cmd_p->addr & ~((uint64_t)this->_transfer_size - 1);
+        const auto req_addr = start_aligned + (cmd_p->dispatch_progress * this->_transfer_size);
 
         if (!_msys_p->WillAcceptTransaction(req_addr, is_write)) {
             break;

@@ -46,8 +46,16 @@ int   pydramsim3_get_expected_cmd_cycles(void *msys_p, void *cmd_p) {
     MemorySystemWrapper *msys = static_cast<MemorySystemWrapper *>(msys_p);
     MemorySystemCommand *cmd = static_cast<MemorySystemCommand *>(cmd_p);
     
-    int mem_transfer_size = (msys->get_bus_bits() / 8) * msys->get_burst_length();
-    int cycles = cmd->size / (mem_transfer_size);
+    uint64_t transfer_size = (msys->get_bus_bits() / 8) * msys->get_burst_length();
+    
+    if (cmd->size == 0) return 0;
+    
+    uint64_t start_addr = cmd->addr;
+    uint64_t end_addr = cmd->addr + cmd->size - 1;
+    uint64_t start_aligned = start_addr & ~(transfer_size - 1);
+    uint64_t end_aligned = end_addr & ~(transfer_size - 1);
+    
+    int cycles = ((end_aligned - start_aligned) / transfer_size) + 1;
 
     return cycles;
 }
@@ -57,8 +65,18 @@ char  pydramsim3_msys_dispatch_cmd(void *msys, void *cmd_p, callback_t dispatch_
     MemorySystemCommand *cmd = static_cast<MemorySystemCommand *>(cmd_p);
     MemorySystemWrapper *msys_wrapper = static_cast<MemorySystemWrapper *>(msys);
 
-    cmd->n_req = (cmd->size + (msys_wrapper->get_bus_bits() / 8 * msys_wrapper->get_burst_length()) - 1) /
-                  (msys_wrapper->get_bus_bits() / 8 * msys_wrapper->get_burst_length());
+    uint64_t transfer_size = (msys_wrapper->get_bus_bits() / 8 * msys_wrapper->get_burst_length());
+    uint64_t start_addr = cmd->addr;
+    uint64_t end_addr = cmd->addr + cmd->size - 1;
+    uint64_t start_aligned = start_addr & ~(transfer_size - 1);
+    uint64_t end_aligned = end_addr & ~(transfer_size - 1);
+    
+    if (cmd->size == 0) {
+        cmd->n_req = 0;
+    } else {
+        cmd->n_req = ((end_aligned - start_aligned) / transfer_size) + 1;
+    }
+    
     cmd->dispatch_callback = dispatch_callback;
     cmd->execute_callback = execute_callback;
     return msys_wrapper->dispatch_command(cmd);
